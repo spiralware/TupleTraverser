@@ -24,25 +24,26 @@ class tuple_printer
 template<size_t N, typename ... Args>
 class TupleElemGetter
 {
+    void print() {std::cout << N << " ";}
     
 };
 
 template<typename ... Args>
 class TupleElemGetter<0, Args...>
 {
-    
+    void print() {std::cout << 0;}
 };
 
-template<typename ... Types>
-void tuple_to_ostream(const std::tuple<Types...>& tup)
+template<typename... Types>
+void tuple_to_ostream(std::ostream& os, const std::tuple<Types...>& tup)
 {
 }
 
-template<typename T>
+/* template<typename T>
 void tuple_to_ostream(const std::tuple<T>& one_elem_tup)  //  probably universal ref?
 {
     std::cout << std::get<0>(one_elem_tup);
-}
+} */
 
 int main()
 {
@@ -59,7 +60,7 @@ int main()
     //  ============================================================
 
     auto one_elem_tup = std::make_tuple(42);
-    tuple_to_ostream(one_elem_tup);
+    //tuple_to_ostream(one_elem_tup);
 
     return 0;
 }
