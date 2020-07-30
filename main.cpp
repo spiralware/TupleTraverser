@@ -1,66 +1,78 @@
 #include <iostream>
 #include <tuple>
-#include <typeinfo>
 
-class student {
+//  ============================================================
+
+class student
+{
+    std::string name = "John";
     int age = 25;
-    double score = 9.;
+    double average_score = 9.2;
 
     friend std::ostream& operator<<(std::ostream& , const student& );
 };
 
-std::ostream& operator<<(std::ostream& o, const student& st)
+std::ostream& operator<<(std::ostream& os, const student& st)
 {
-    o << "age = " << st.age << "; score = " << st.score;
-    return o;
+    os << "Student {\n"
+    << "\"name\": " << st.name << ",\n"
+    << "\"age\": " << st.age << ",\n"
+    << "\"average_score\": " << st.average_score << "\n"
+    << "}";
+    return os;
 }
 
-template<typename ... T>
-class tuple_printer
-{
+//  ============================================================
 
+template<size_t I>
+class print_tuple_t
+{
+public:
+    template<typename ... Types>
+    static void print(std::ostream& os, const std::tuple<Types...>& tup)
+    {
+        print_tuple_t<I - 1>::print(os, tup);
+        os << std::get<I>(tup) << std::endl;
+    }
 };
 
-template<size_t N, typename ... Args>
-class TupleElemGetter
+template<>
+class print_tuple_t<0>
 {
-    void print() {std::cout << N << " ";}
-    
+public:
+    template<typename ... Types>
+    static void print(std::ostream& os, const std::tuple<Types...>& tup)
+    {
+        os << std::get<0>(tup) << std::endl;
+    }
 };
 
-template<typename ... Args>
-class TupleElemGetter<0, Args...>
-{
-    void print() {std::cout << 0;}
-};
+//  ============================================================
 
-template<typename... Types>
+template<typename ... Types>
 void tuple_to_ostream(std::ostream& os, const std::tuple<Types...>& tup)
 {
+    using namespace std;
+    constexpr size_t tup_size = tuple_size<tuple<Types...>>::value;
+    print_tuple_t<tup_size - 1>::print(os, tup);
 }
 
-/* template<typename T>
-void tuple_to_ostream(const std::tuple<T>& one_elem_tup)  //  probably universal ref?
-{
-    std::cout << std::get<0>(one_elem_tup);
-} */
+//  ============================================================
 
 int main()
 {
-    std::cout << "EMINEM" << std::endl;
-    student st;
-    auto tup = std::make_tuple(1, 3.14, "mystring", st);
-    std::size_t sz = std::tuple_size<decltype(tup)>::value;
-    
-    for (int i = 0; i < sz; ++i)
-    {
-        //std::cout << std::get<i>(tup);
-    }
-    
-    //  ============================================================
+    auto tup_one_elem = std::make_tuple(42);
+    tuple_to_ostream(std::cout, tup_one_elem);
+    std::cout << "\n";
 
-    auto one_elem_tup = std::make_tuple(42);
-    //tuple_to_ostream(one_elem_tup);
+    auto tup_built_in_types = std::make_tuple(42, 42.42, "42", true);
+    tuple_to_ostream(std::cout, tup_built_in_types);
+    std::cout << "\n";
+
+    student st;
+    auto tup_user_types = std::make_tuple(std::string("yeah"), st);
+    tuple_to_ostream(std::cout, tup_user_types);
+    std::cout << "\n";
 
     return 0;
 }
